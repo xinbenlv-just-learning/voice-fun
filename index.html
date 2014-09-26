@@ -44,9 +44,17 @@ col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-
 <script src="recorderjs/recorder.js"></script>
 <script src="jquery-2.1.1.min.js"></script>
 <script src="bootstrap/js/bootstrap.min.js"></script>
+<script src="//www.parsecdn.com/js/parse-1.3.0.min.js"></script>
+<script src="guid.js"></script>
+<script src="jquery.cookie.js"></script>
+
 <script>
+    var myId = $.cookie("myId") || guid();
+    $.cookie("myId", myId);
+    console.log("set id: " + myId);
 
     jQuery(function($) {
+
         function __log(e, data) {
             //console.log(e);
             //console.log(data);
@@ -88,11 +96,21 @@ col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-
                             src: url,
                             controls: true
                  })));
+                var VoiceClip = Parse.Object.extend("VoiceClip");
+                var voiceClip = new VoiceClip();
+                voiceClip.save({voice: blob, client_id: myId}).then(function(object) {
+                    console.log("saved a clicp of id" + myId);
+                    console.log(object);
+
+                });
             });
         }
 
 
         $(document).ready(function() {
+            // TODO(zzn): putting credentials in the code-base may not be a good idea, but Parse may be different.
+            Parse.initialize("pQkbpqhpAJAhcr2PmlUQBmTMhof6YEyRI6htkw38", "Y9u8JIjstr5WVjcYN4cMvwVhIXK4UigS7rxlcj5i");
+
             try {
                 // webkit shim
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
