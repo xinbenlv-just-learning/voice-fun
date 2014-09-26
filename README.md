@@ -2,7 +2,7 @@
 An app that make some fun out of WebRTC tech.
 
 ## Credit
-https://github.com/mattdiamond/Recorderjs RecorderJS by mattdiamond
-
+1. https://github.com/mattdiamond/Recorderjs RecorderJS by mattdiamond
+2. https://github.com/stewartlord/identicon.js Identicon by stewartlord
 Zainan Victor Zhou <zzn@zzn.im>
 

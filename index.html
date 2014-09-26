@@ -29,8 +29,14 @@ col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-
     </div>
 </div>
 <div class="container">
-    <div id="recordingslist" class="">
+    <div id="recordingslist">
 
+        <div id="voice_msg_template"
+             class="col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4">
+            <div class="avatar"></div>
+            <audio src="#" controls></audio>
+
+        </div>
     </div>
 </div>
 <div class="footer">
@@ -48,13 +54,19 @@ col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-
 <script src="//www.parsecdn.com/js/parse-1.3.0.min.js"></script>
 <script src="guid.js"></script>
 <script src="jquery.cookie.js"></script>
-
+<script src="identicons/pnglib.js"></script>
+<script src="identicons/identicon.js"></script>
 <script>
     var myId = $.cookie("myId") || guid();
     $.cookie("myId", myId);
     console.log("set id: " + myId);
 
+
     jQuery(function($) {
+        // Template
+        var voice_msg_template = $("#voice_msg_template").clone();
+        //$("#recordingslist").empty();
+        // End of Template
 
         function __log(e, data) {
             //console.log(e);
@@ -89,19 +101,20 @@ col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-
 
         function createDownloadLink() {
             recorder && recorder.exportWAV(function(blob) {
-                var url = URL.createObjectURL(blob);
-                $("#recordingslist")
-                    .append($("<div>", {class : "row"})
-                        .append($("<audio>", {
-                            class: "col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4",
-                            src: url,
-                            controls: true
-                 })));
+
                 var VoiceClip = Parse.Object.extend("VoiceClip");
                 var voiceClip = new VoiceClip();
+
                 voiceClip.save({voice: blob, client_id: myId}).then(function(object) {
                     console.log("saved a clicp of id" + myId);
                     console.log(object);
+                    var url = URL.createObjectURL(blob);
+                    var voice_msg = voice_msg_template.clone();
+                    var data = new Identicon(myId, 30).toString();
+                    var identicon = $('<img width=30 height=30 src="data:image/png;base64,' + data + '">');
+                    voice_msg.find(".avatar").append(identicon);
+                    voice_msg.find("audio").attr("src", url);
+                    $("#recordingslist").append(voice_msg);
 
                 });
             });
