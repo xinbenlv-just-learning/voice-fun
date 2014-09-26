@@ -111,8 +111,8 @@ col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-1 col-md-6 col-md-offset-3 col-
                     var url = URL.createObjectURL(blob);
                     var voice_msg = voice_msg_template.clone();
                     var data = new Identicon(myId, 30).toString();
-                    var identicon = $('<img width=30 height=30 src="data:image/png;base64,' + data + '">');
-                    voice_msg.find(".avatar").append(identicon);
+                    var identicon_url = "data:image/png;base64," + data;
+                    voice_msg.find(".avatar").css("background-image", "url(" + identicon_url + ")");
                     voice_msg.find("audio").attr("src", url);
                     $("#recordingslist").append(voice_msg);
 
