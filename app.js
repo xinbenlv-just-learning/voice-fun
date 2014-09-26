@@ -6,7 +6,7 @@ console.log("set id: " + myId);
 jQuery(function($) {
     // Template
     var voice_msg_template = $("#voice_msg_template").clone();
-    //$("#recordingslist").empty();
+    $("#recordingslist").empty();
     // End of Template
 
     function __log(e, data) {
@@ -40,32 +40,76 @@ jQuery(function($) {
         recorder.clear();
     }
 
+    var displayVoiceMsg = function(id, url) {
+        var voice_msg = voice_msg_template.clone();
+        var data = new Identicon(myId, 30).toString();
+        var identicon_url = "data:image/png;base64," + data;
+        voice_msg.find(".avatar").css("background-image", "url(" + identicon_url + ")");
+        voice_msg.find("audio").attr("src", url);
+        $("#recordingslist").append(voice_msg);
+    };
+
+    var initLoadVoice = function() {
+        var VoiceClip = Parse.Object.extend("VoiceClip");
+        var query = new Parse.Query(VoiceClip);
+        query.limit(10);
+        query.descending("createdAt");
+        query.find({
+            success: function(results) {
+                for (var i=0; i<results.length;i++) {
+                    var result = results[i];
+                    var mp3 = result.get("voice");
+                    var voiceUrl = mp3.url();
+                    displayVoiceMsg(result.get("client_id"), voiceUrl);
+                }
+            }
+        });
+
+    }
     function createDownloadLink() {
         recorder && recorder.exportWAV(function(blob) {
-            console.log(blob);
+            __log(blob);
             var VoiceClip = Parse.Object.extend("VoiceClip");
             var voiceClip = new VoiceClip();
+            var reader = new FileReader();
+            reader.onload = function(event){
+                __log("FileReader");
+                __log(event);
+                var byteArray = new Uint8Array(event.target.result);
 
-            voiceClip.save({voice: blob, client_id: myId}).then(function(object) {
-                console.log("saved a clicp of id" + myId);
-                console.log(object);
-                var url = URL.createObjectURL(blob);
-                var voice_msg = voice_msg_template.clone();
-                var data = new Identicon(myId, 30).toString();
-                var identicon_url = "data:image/png;base64," + data;
-                voice_msg.find(".avatar").css("background-image", "url(" + identicon_url + ")");
-                voice_msg.find("audio").attr("src", url);
-                $("#recordingslist").append(voice_msg);
+                // TODO(zzn): is this a performance problem?
+                var output = new Array( byteArray.length );
+                var i = 0;
+                var n = output.length;
+                while( i < n ) {
+                    output[i] = byteArray[i];
+                    i++;
+                }
+                var parseFile = new Parse.File("voice.mp3", output);
 
-            });
+                parseFile.save().then(function(){
+                    voiceClip.set("client_id", myId);
+                    voiceClip.set("voice", parseFile);
+                    voiceClip.save().then(function(object){
+                        __log("saved a clicp of id" + myId);
+                        __log(object);
+
+                        var url = URL.createObjectURL(blob);
+                        displayVoiceMsg(myId, url);
+
+                    })
+                });
+            };
+            reader.readAsArrayBuffer(blob);
+
+
         });
     }
-
 
     $(document).ready(function() {
         // TODO(zzn): putting credentials in the code-base may not be a good idea, but Parse may be different.
         Parse.initialize("pQkbpqhpAJAhcr2PmlUQBmTMhof6YEyRI6htkw38", "Y9u8JIjstr5WVjcYN4cMvwVhIXK4UigS7rxlcj5i");
-
+        initLoadVoice();
         try {
             // webkit shim
             window.AudioContext = window.AudioContext || window.webkitAudioContext;
