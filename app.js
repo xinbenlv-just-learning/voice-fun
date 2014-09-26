@@ -42,7 +42,7 @@ jQuery(function($) {
 
     function createDownloadLink() {
         recorder && recorder.exportWAV(function(blob) {
-
+            console.log(blob);
             var VoiceClip = Parse.Object.extend("VoiceClip");
             var voiceClip = new VoiceClip();
 
